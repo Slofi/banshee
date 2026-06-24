@@ -68,6 +68,7 @@ sudo nmcli device set wlxe84e06a00bc4 managed yes
 | Sudoers | `/etc/sudoers.d/banshee` |
 | Scan tmp | `/tmp/banshee_scan-*.csv` |
 | Cap tmp | `/tmp/banshee_cap_TIMESTAMP-*.cap` (per-session prefix) |
+| GitHub | `https://github.com/Slofi/banshee` |
 
 ## Pending
 
@@ -82,6 +83,7 @@ sudo nmcli device set wlxe84e06a00bc4 managed yes
 - **2026-06-24** — Codex UX/autonomy pass: Capture tab now has an Action Deck that summarizes selected AP, channel, observed clients, and WPS state, then offers direct `Capture`, `Force HS`, `PMKID`, and `WPS` actions. Banshee now self-inspects captures: WPA `.cap` files are verified with `aircrack-ng`; PMKID `.pcapng` files are verified with `hcxpcapngtool`. `/api/capture/status`, `/api/pmkid/status`, `/api/saves`, and `/api/capture/inspect` expose validation metadata (`valid`, quality level, label, size/details). UI shows inspection status and saved-file quality badges. Crack start is guarded client-side and server-side so unverified WPA captures do not launch cracking. Verified with Python compile, JS syntax check, and Flask test-client checks; live RTL8812AU capture path still needs CD validation.
 - **2026-06-24** — Claude audit follow-up: capture status now avoids the redundant second `aircrack-ng` inspection after handshake confirmation, and PMKID cracking no longer builds a shell-quoted `bash -c` wordlist command; combined wordlists are prepared in Python and `hashcat` is launched with argv.
 - **2026-06-24** — Saves inspection/metadata pass: new WPA/PMKID saves now write sidecar `.json` metadata with SSID/BSSID/channel/privacy, save method, timestamp, path, and validation result. Saves tab has an `Inspect` action that validates old `.cap`/`.pcapng` files on demand, updates the sidecar, refreshes quality badges, and mirrors the result into the Action Deck inspection line.
+- **2026-06-24** — GitHub save checkpoint: initialized local Git repository, connected `origin` to `git@github.com:Slofi/banshee.git`, added app source/static/templates/notes/curated wordlists with `.gitignore` excluding venv, captures, generated hash/crack outputs, and generated `top-candidates.txt`. Pushed `main` at commit `6872872` (`Initial Banshee app with capture validation UX`). Working tree clean after push.
 - **2026-05-29** — Built from scratch: Flask backend wrapping aircrack-ng (airmon-ng, airodump-ng, aireplay-ng, aircrack-ng). 4-tab UI: Scan, Attack, Capture, Crack. Dark/amber theme matching CD stack.
 - **2026-05-29** — Launcher tile added (`~/launcher/app.py`), banshee.service created
 - **2026-05-29** — Monitor mode fix: bypassed airmon-ng, using `iw dev set type monitor` directly (RTL8812AU driver quirk — doesn't rename interface or report type monitor in iw dev)
