@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banshee</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+    <div class="header-left">
+        <span class="app-name">BANSHEE</span>
+        <span class="dot" id="dot-monitor"></span>
+        <span class="status-label" id="label-mode">managed</span>
+    </div>
+    <div class="header-right">
+        <button class="btn btn-header" id="btn-monitor" onclick="toggleMonitor()">Monitor OFF</button>
+        <button class="btn-icon" id="burger-btn" onclick="toggleBurger()" title="Settings">&#9776;</button>
+    </div>
+</header>
+
+<!-- ── Burger panel ── -->
+<div id="burger-panel">
+    <div class="burger-setting">
+        <div class="burger-setting-label"><i class="fa-solid fa-magnifying-glass"></i> UI Zoom</div>
+        <div class="burger-zoom-row">
+            <button class="zoom-step-btn" onclick="setUiZoom(getUiZoom()-5)">−</button>
+            <input type="range" id="ui-zoom-slider" min="70" max="150" step="5" value="100" oninput="setUiZoom(this.value)">
+            <button class="zoom-step-btn" onclick="setUiZoom(getUiZoom()+5)">+</button>
+            <span id="ui-zoom-display">100%</span>
+        </div>
+    </div>
+    <div class="burger-setting">
+        <div class="burger-setting-label"><i class="fa-solid fa-palette"></i> Accent Colour</div>
+        <div class="accent-swatch-row">
+            <div id="accent-swatch" onclick="openAccentPicker()" title="Choose accent colour"></div>
+            <button class="burger-small-btn" onclick="resetAccentColor()">Reset</button>
+        </div>
+    </div>
+    <div class="burger-setting">
+        <div class="burger-setting-label"><i class="fa-solid fa-power-off"></i> App Control</div>
+        <div class="burger-control-row">
+            <button class="burger-small-btn" onclick="bansheeRestart()">Restart</button>
+            <button class="burger-small-btn burger-btn-danger" onclick="bansheeStop()">Shut Down</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Accent picker overlay ── -->
+<div id="accent-picker-overlay" onclick="closeAccentPicker()">
+    <div id="accent-picker-modal" onclick="event.stopPropagation()">
+        <h3>Accent Colour</h3>
+        <div class="accent-preset-grid" id="accent-preset-grid"></div>
+        <div class="accent-custom-row">
+            <label>Custom</label>
+            <input type="color" id="accent-custom-input" oninput="previewAccent(this.value)">
+            <span id="accent-hex-display">#f59e0b</span>
+        </div>
+        <div class="accent-picker-btns">
+            <button onclick="closeAccentPicker()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmAccentColor()">Apply</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Tabs ── -->
+<div class="tabs">
+    <button class="tab active" onclick="showTab('scan', this)">Scan</button>
+    <button class="tab"        onclick="showTab('capture', this)">Capture</button>
+    <button class="tab"        onclick="showTab('crack', this)">Crack</button>
+    <button class="tab"        onclick="showTab('saves', this); loadSaves()">Saves</button>
+</div>
+
+<!-- ════════════════════════════════════ SCAN TAB ════ -->
+<div id="tab-scan" class="tab-content active">
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>Access Points</span>
+            <div class="panel-header-btns">
+                <button class="btn btn-secondary btn-sm" id="btn-wps-scan" onclick="scanWPS()">Scan WPS</button>
+                <button class="btn btn-primary" id="btn-scan" onclick="toggleScan()">Start Scan</button>
+            </div>
+        </div>
+        <div id="scan-target-bar" class="scan-target-bar hidden"></div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th id="th-essid"   class="sortable" onclick="setSortCol('essid')">SSID</th>
+                        <th id="th-bssid"   class="sortable" onclick="setSortCol('bssid')">BSSID</th>
+                        <th id="th-channel" class="sortable" onclick="setSortCol('channel')">CH</th>
+                        <th id="th-power"   class="sortable" onclick="setSortCol('power')">Signal ↓</th>
+                        <th id="th-privacy" class="sortable" onclick="setSortCol('privacy')">Privacy</th>
+                    </tr>
+                </thead>
+                <tbody id="ap-tbody">
+                    <tr><td colspan="5" class="empty">Start a scan to discover networks</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header"><span>Clients</span></div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th id="cth-mac"     class="sortable" onclick="setClientSortCol('mac')">MAC</th>
+                        <th id="cth-bssid"   class="sortable" onclick="setClientSortCol('bssid')">BSSID</th>
+                        <th id="cth-power"   class="sortable" onclick="setClientSortCol('power')">Signal ↓</th>
+                        <th id="cth-packets" class="sortable" onclick="setClientSortCol('packets')">Pkts</th>
+                        <th id="cth-probed"  class="sortable" onclick="setClientSortCol('probed')">Probed SSIDs</th>
+                    </tr>
+                </thead>
+                <tbody id="client-tbody">
+                    <tr><td colspan="5" class="empty">No clients</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ════════════════════════════════════ CAPTURE TAB ════ -->
+<div id="tab-capture" class="tab-content">
+
+    <div class="panel">
+        <div class="panel-header"><span>Target</span></div>
+        <div id="capture-target" class="target-card">
+            <span class="empty">No target — select an AP from the Scan tab</span>
+        </div>
+    </div>
+
+    <div class="panel action-deck">
+        <div class="panel-header">
+            <span>Action Deck</span>
+            <span id="action-ready" class="panel-hint">select target + monitor</span>
+        </div>
+        <div class="action-screen">
+            <div>
+                <span class="target-label">Selected</span>
+                <strong id="action-target-name">No target</strong>
+            </div>
+            <div>
+                <span class="target-label">Channel</span>
+                <strong id="action-target-channel">—</strong>
+            </div>
+            <div>
+                <span class="target-label">Clients</span>
+                <strong id="action-target-clients">0</strong>
+            </div>
+            <div>
+                <span class="target-label">WPS</span>
+                <strong id="action-target-wps">unknown</strong>
+            </div>
+        </div>
+        <div class="action-grid">
+            <button class="btn btn-primary action-btn" id="quick-capture" onclick="quickCapture()">Capture</button>
+            <button class="btn btn-danger action-btn" id="quick-force" onclick="quickForceHandshake()">Force HS</button>
+            <button class="btn btn-primary action-btn" id="quick-pmkid" onclick="togglePmkid()">PMKID</button>
+            <button class="btn btn-secondary action-btn" id="quick-wps" onclick="toggleWPS()">WPS</button>
+        </div>
+        <div id="action-inspect" class="inspect-line unknown">No capture inspected yet.</div>
+        <div id="action-hint" class="status-line">Pick an AP in Scan, enable monitor, then use one action.</div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header"><span>WPA Handshake</span></div>
+        <div id="handshake-status" class="handshake-indicator">
+            <span class="hs-icon">&#9675;</span>
+            <span class="hs-label">Waiting for handshake...</span>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary"   id="btn-capture"  onclick="toggleCapture()">Start Capture</button>
+            <button class="btn btn-secondary" id="btn-save-cap" onclick="saveCapture()" disabled>Save Capture</button>
+        </div>
+        <div id="cap-file" class="status-line"></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>PMKID Capture</span>
+            <span class="panel-hint">no client needed</span>
+        </div>
+        <div class="section-desc">Sends association frames directly to the AP and captures the PMKID — no client needs to be connected. Feed the result into the Crack tab.</div>
+        <div id="pmkid-status" class="handshake-indicator">
+            <span class="hs-icon">&#9675;</span>
+            <span class="hs-label">Idle</span>
+            <span id="pmkid-count-badge" class="pmkid-count hidden"></span>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary"   id="btn-pmkid"       onclick="togglePmkid()">Start PMKID</button>
+            <button class="btn btn-secondary" id="btn-save-pmkid"  onclick="savePmkid()" disabled>Save</button>
+            <button class="btn btn-secondary" id="btn-crack-pmkid" onclick="sendPmkidToCrack()" disabled>→ Crack</button>
+        </div>
+        <div id="pmkid-file" class="status-line"></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>WPS / Pixie Dust</span>
+            <span id="wps-target-badge" class="wps-badge"></span>
+        </div>
+        <div class="section-desc">Attacks WPS PIN directly — no wordlist, no handshake. Recovers the Wi-Fi password in seconds on vulnerable routers.</div>
+        <div class="btn-group">
+            <button class="btn btn-primary"   id="btn-wps"  onclick="toggleWPS()">Start Pixie Dust</button>
+            <button class="btn btn-secondary" onclick="stopWPS()">Stop</button>
+        </div>
+        <div id="wps-result" class="crack-result hidden"></div>
+        <div id="wps-log"    class="log-output"></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header"><span>Force Handshake</span></div>
+        <div class="form-row">
+            <label>Client</label>
+            <select id="cap-deauth-client">
+                <option value="FF:FF:FF:FF:FF:FF">All clients (broadcast)</option>
+            </select>
+        </div>
+        <div id="cap-no-clients" class="hint-text warn" style="display:none">
+            No clients detected on this AP — broadcast deauth won't produce a handshake without an active client.
+        </div>
+        <div class="form-row">
+            <label>Packets <span class="hint">0 = continuous</span></label>
+            <input type="number" id="cap-deauth-count" value="5" min="0" style="max-width:100px">
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-danger"    onclick="sendDeauth()">Deauth</button>
+            <button class="btn btn-secondary" onclick="stopAttack()">Stop</button>
+        </div>
+        <div id="deauth-status" class="status-line"></div>
+    </div>
+
+</div>
+
+<!-- ════════════════════════════════════ SAVES TAB ════ -->
+<div id="tab-saves" class="tab-content">
+
+    <div class="panel">
+        <div class="panel-header">
+            <span>Saved Captures</span>
+            <button class="btn btn-secondary btn-sm" onclick="loadSaves()">Refresh</button>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="saves-tbody">
+                    <tr><td colspan="4" class="empty">No saved captures</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- ════════════════════════════════════ CRACK TAB ════ -->
+<div id="tab-crack" class="tab-content">
+
+    <div class="panel">
+        <div class="panel-header"><span>Wordlist Attack</span></div>
+
+        <div class="form-row">
+            <label>Capture file</label>
+            <div class="select-refresh-row">
+                <select id="crack-save-select" onchange="onCrackSaveSelect(this)">
+                    <option value="">— current capture —</option>
+                </select>
+                <button class="btn-icon" onclick="loadCrackSaves()" title="Refresh list">↻</button>
+            </div>
+        </div>
+        <input type="hidden" id="crack-capfile">
+        <div class="form-row wordlist-row">
+            <label>Wordlists</label>
+            <div class="wordlist-section">
+                <div class="bubble-container" id="wordlist-bubbles"></div>
+                <div class="select-refresh-row">
+                    <select id="wordlist-select" onchange="addWordlistFromSelect(this)">
+                        <option value="">Add wordlist...</option>
+                    </select>
+                    <button class="btn-icon" onclick="loadWordlists()" title="Refresh">↻</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <label>Quick list <span class="hint">top picks from all wordlists</span></label>
+            <div class="top-candidates-row">
+                <span class="hint">Top</span>
+                <input type="number" id="top-n-input" value="1000" min="100" max="10000" step="100" style="max-width:72px">
+                <span class="hint">per large list</span>
+                <button class="btn btn-secondary btn-sm" id="btn-build-top" onclick="buildTopCandidates()">Build</button>
+                <span id="top-candidates-status" class="hint"></span>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <label>BSSID <span class="hint">optional</span></label>
+            <input type="text" id="crack-bssid" placeholder="auto-filled from target">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" id="btn-crack" onclick="toggleCrack()">Start Crack</button>
+        </div>
+
+        <div id="crack-result" class="crack-result hidden"></div>
+        <div id="crack-elapsed" class="status-line hidden"></div>
+        <div id="crack-log"    class="log-output"></div>
+    </div>
+
+</div>
+
+<div id="toast-container"></div>
+
+<div id="client-menu">
+    <div class="cm-info">
+        <div class="cm-mac" id="cm-mac"></div>
+        <div class="cm-detail"><span class="cm-label">Vendor</span> <span id="cm-vendor"></span></div>
+        <div class="cm-detail"><span class="cm-label">AP</span> <span id="cm-ap"></span></div>
+    </div>
+    <div class="cm-actions">
+        <button class="cm-btn" id="cm-select-ap" onclick="cmSelectAP()"><i class="fa-solid fa-crosshairs"></i> Select AP</button>
+        <button class="cm-btn" onclick="cmCopyMAC()"><i class="fa-solid fa-copy"></i> Copy MAC</button>
+        <button class="cm-btn" id="cm-deauth" onclick="cmDeauth()"><i class="fa-solid fa-bolt"></i> Deauth</button>
+        <button class="cm-btn cm-btn-accent" id="cm-deauth-capture" onclick="cmDeauthCapture()"><i class="fa-solid fa-bolt"></i> Deauth + Capture</button>
+    </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

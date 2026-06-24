@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+venv/
+.venv/
+
+captures/
+*.cap
+*.pcapng
+*.hc22000
+*.cracked
+
+wordlists/top-candidates.txt
+
+.env
+.DS_Store
