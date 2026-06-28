@@ -337,6 +337,38 @@
         <button class="cm-btn cm-btn-accent" id="cm-deauth-capture" onclick="cmDeauthCapture()"><i class="fa-solid fa-bolt"></i> Deauth + Capture</button>
     </div>
 </div>
+<div id="service-splash" class="service-splash" hidden data-mode="restart">
+  <div class="ss-panel">
+    <div class="ss-spectrum">
+      <div class="ss-sbar" style="animation-delay:0s"></div>
+      <div class="ss-sbar" style="animation-delay:.07s"></div>
+      <div class="ss-sbar" style="animation-delay:.14s"></div>
+      <div class="ss-sbar" style="animation-delay:.21s"></div>
+      <div class="ss-sbar" style="animation-delay:.28s"></div>
+      <div class="ss-sbar" style="animation-delay:.35s"></div>
+      <div class="ss-sbar" style="animation-delay:.28s"></div>
+      <div class="ss-sbar" style="animation-delay:.21s"></div>
+      <div class="ss-sbar" style="animation-delay:.14s"></div>
+      <div class="ss-sbar" style="animation-delay:.07s"></div>
+      <div class="ss-sbar" style="animation-delay:0s"></div>
+      <div class="ss-sbar" style="animation-delay:.07s"></div>
+    </div>
+    <div class="ss-wordmark">BANSHEE</div>
+    <div class="ss-tagline">WiFi Recon &amp; Capture</div>
+    <div class="ss-status-wrap"><div class="ss-status">
+      <span class="ss-txt-shutdown">OFFLINE</span>
+      <span class="ss-txt-restart">RESTARTING</span>
+    </div></div>
+    <div class="ss-anim"><div class="ss-dots">
+      <div class="ss-dot"></div><div class="ss-dot"></div>
+      <div class="ss-dot"></div><div class="ss-dot"></div>
+    </div></div>
+    <div class="ss-hint">
+      <div class="ss-hint-label">To restart</div>
+      <code class="ss-hint-cmd" onclick="navigator.clipboard.writeText(this.textContent)" title="Click to copy">systemctl --user restart banshee</code>
+    </div>
+  </div>
+</div>
 <script src="/static/app.js"></script>
 </body>
 </html>

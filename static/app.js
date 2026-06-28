@@ -1295,18 +1295,24 @@ function resetAccentColor() {
 }
 
 // ── App control ───────────────────────────────────────────────────
+function showServiceSplash(mode) {
+    const el = document.getElementById('service-splash');
+    if (!el) return;
+    el.dataset.mode = mode || 'restart';
+    el.removeAttribute('hidden');
+}
+
 async function bansheeRestart() {
     closeBurger();
-    toast('Restarting…');
+    showServiceSplash('restart');
     await fetch('/api/system/restart', { method: 'POST' }).catch(() => {});
-    setTimeout(() => location.reload(), 4000);
 }
 
 async function bansheeStop() {
     if (!confirm('Shut down Banshee?')) return;
     closeBurger();
+    showServiceSplash('shutdown');
     await fetch('/api/system/stop', { method: 'POST' }).catch(() => {});
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:monospace;color:#6b7280;font-size:14px">Banshee stopped.</div>';
 }
 
 // ── Init ──────────────────────────────────────────────────────────
