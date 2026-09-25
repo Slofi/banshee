@@ -16,3 +16,5 @@ wordlists/top-candidates.txt
 .env
 .DS_Store
 banshee.md
+# Project overview card (Syncthing-delivered) - keep on disk, never commit, never delete
+banshee-overview.md
