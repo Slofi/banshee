@@ -1,5 +1,31 @@
 'use strict';
 
+// ── Confirm modal ─────────────────────────────────────────────────
+function customConfirm(msg, okLabel = 'Confirm') {
+    return new Promise((resolve) => {
+        const modal  = document.getElementById('confirm-modal');
+        const msgEl  = document.getElementById('confirm-msg');
+        const okBtn  = document.getElementById('confirm-ok');
+        const cancel = document.getElementById('confirm-cancel');
+        msgEl.textContent = msg;
+        okBtn.textContent = okLabel;
+        modal.classList.remove('hidden');
+        function done(result) {
+            modal.classList.add('hidden');
+            okBtn.removeEventListener('click', onOk);
+            cancel.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onBackdrop);
+            resolve(result);
+        }
+        const onOk       = () => done(true);
+        const onCancel   = () => done(false);
+        const onBackdrop = (e) => { if (e.target === modal) done(false); };
+        okBtn.addEventListener('click', onOk);
+        cancel.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+    });
+}
+
 // ── Toast ─────────────────────────────────────────────────────────
 function toast(msg, isError = false) {
     const el = document.createElement('div');
@@ -925,7 +951,7 @@ async function loadSaves() {
 }
 
 async function deleteSave(filename) {
-    if (!confirm('Delete ' + filename + '?')) return;
+    if (!await customConfirm('Delete ' + filename + '?', 'Delete')) return;
     const r = await fetch('/api/saves/' + encodeURIComponent(filename), { method: 'DELETE' });
     const data = await r.json().catch(() => ({}));
     if (data.ok) {
@@ -1309,7 +1335,7 @@ async function bansheeRestart() {
 }
 
 async function bansheeStop() {
-    if (!confirm('Shut down Banshee?')) return;
+    if (!await customConfirm('Shut down Banshee?', 'Shut Down')) return;
     closeBurger();
     showServiceSplash('shutdown');
     await fetch('/api/system/stop', { method: 'POST' }).catch(() => {});

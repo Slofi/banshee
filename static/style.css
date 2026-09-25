@@ -698,6 +698,28 @@ tr.client-row.clickable:hover { background: var(--accent-faint); }
     color: var(--accent);
 }
 
+/* ── Confirm modal ── */
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 3100;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.confirm-modal.hidden { display: none; }
+.confirm-box {
+    background: #141414;
+    border: 1px solid var(--accent-mid);
+    border-radius: 8px;
+    padding: 18px 20px 16px;
+    min-width: 260px;
+    max-width: 340px;
+}
+.confirm-box p { margin: 0 0 16px; color: var(--text); font-size: 12.5px; line-height: 1.5; font-family: var(--font); }
+.confirm-btns { display: flex; gap: 8px; justify-content: flex-end; }
+
 /* ── WPS badges ── */
 .wps-scan-badge {
     display: inline-block;
